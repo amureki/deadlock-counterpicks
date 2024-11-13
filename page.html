@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hero Counter Pick Analyzer</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 py-8">
+<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+  <h1 class="text-2xl font-bold mb-4">Hero Counter Pick Analyzer</h1>
+
+  <div class="mb-4 grid grid-cols-2 gap-4">
+    <p class="font-medium">Select Enemy Heroes:</p>
+    <p class="font-medium text-right">Maximum 6 heroes</p>
+    <div id="hero-checkboxes" class="col-span-2 grid grid-cols-2 gap-4"></div>
+  </div>
+
+  <div id="results" class="mt-6"></div>
+  <div id="error-message" class="mt-4 text-red-500"></div>
+</div>
+
+<script>
+  const heroCheckboxesDiv = document.getElementById('hero-checkboxes');
+  const resultsDiv = document.getElementById('results');
+  const errorMessageDiv = document.getElementById('error-message');
+
+  let heroData = [];
+
+  fetch('/heroes.json')
+    .then(response => response.json())
+    .then(data => {
+      heroData = data.heroes;
+      console.log('Hero data loaded:', heroData);
+      renderHeroCheckboxes();
+      analyzeCounterItems();
+    })
+    .catch(error => {
+      console.error('Error loading hero data:', error);
+      errorMessageDiv.textContent = 'Error loading hero data. Please try again later.';
+    });
+
+  function renderHeroCheckboxes() {
+    heroCheckboxesDiv.innerHTML = '';
+
+    const checkboxes = heroData.map(hero => {
+      const checkbox = document.createElement('div');
+      checkbox.classList.add('flex', 'items-center');
+
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = `hero-${hero.name}`;
+      input.classList.add('mr-2');
+      input.addEventListener('change', () => {
+        const selectedHeroes = getSelectedHeroes();
+        if (selectedHeroes.length > 6) {
+          input.checked = false;
+        }
+        analyzeCounterItems();
+      });
+
+      const label = document.createElement('label');
+      label.htmlFor = `hero-${hero.name}`;
+      label.textContent = hero.name;
+
+      checkbox.appendChild(input);
+      checkbox.appendChild(label);
+      return checkbox;
+    });
+
+    for (let i = 0; i < checkboxes.length; i++) {
+      heroCheckboxesDiv.appendChild(checkboxes[i]);
+    }
+  }
+
+  function getSelectedHeroes() {
+    const selectedHeroes = [];
+    const checkboxes = document.querySelectorAll('#hero-checkboxes input[type="checkbox"]');
+
+    for (const checkbox of checkboxes) {
+      if (checkbox.checked) {
+        selectedHeroes.push(checkbox.id.split('-')[1]);
+      }
+    }
+
+    return selectedHeroes;
+  }
+
+  function getCounterItems(selectedHeroes) {
+    const counterItems = {};
+
+    for (const hero of heroData) {
+      if (selectedHeroes.includes(hero.name)) {
+        counterItems[hero.name] = hero.counter_items;
+      }
+    }
+
+    return counterItems;
+  }
+
+  function getBestCounterItems(selectedHeroes) {
+    const allCounterItems = [];
+
+    for (const hero of heroData) {
+      if (selectedHeroes.includes(hero.name)) {
+        allCounterItems.push(...hero.counter_items);
+      }
+    }
+
+    const itemCounts = allCounterItems.reduce((counts, item) => {
+      counts[item] = (counts[item] || 0) + 1;
+      return counts;
+    }, {});
+
+    const bestItems = Object.entries(itemCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([item]) => item);
+
+    return bestItems;
+  }
+
+  function analyzeCounterItems() {
+    const selectedHeroes = getSelectedHeroes();
+    const counterItemsPerHero = getCounterItems(selectedHeroes);
+    const bestCounterItems = getBestCounterItems(selectedHeroes);
+
+    let html = '<h2 class="text-xl font-bold mb-2">Counter items per hero:</h2>';
+
+    for (const [hero, items] of Object.entries(counterItemsPerHero)) {
+      html += `<p><strong>${hero}:</strong> ${items.join(', ')}</p>`;
+    }
+
+    html += `<h2 class="text-xl font-bold mt-6 mb-2">Best 5 overall counter items:</h2>`;
+    html += `<p>${bestCounterItems.join(', ')}</p>`;
+
+    resultsDiv.innerHTML = html;
+    errorMessageDiv.textContent = '';
+  }
+</script>
