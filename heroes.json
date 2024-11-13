@@ -12,7 +12,8 @@
       "name": "Bebop",
       "counter_items": [
         "Debuff Remover",
-        "Ethereal Shift"
+        "Ethereal Shift",
+        "Reactive Barrier"
       ]
     },
     {
@@ -23,7 +24,9 @@
     },
     {
       "name": "Grey Talon",
-      "counter_items": []
+      "counter_items": [
+        "Knockdown"
+      ]
     },
     {
       "name": "Haze",
@@ -120,7 +123,9 @@
     },
     {
       "name": "Yamato",
-      "counter_items": []
+      "counter_items": [
+        "Silence Glyph"
+      ]
     }
   ]
 }
