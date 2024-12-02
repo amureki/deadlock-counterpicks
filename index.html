@@ -27,7 +27,12 @@
 
   let heroData = [];
 
-  fetch('/heroes.json')
+  let heroesEndpoint = '/heroes.json';
+  if (location.protocol === 'https:') {
+    heroesEndpoint = '/deadlock-counterpicks/heroes.json';
+  }
+
+  fetch(heroesEndpoint)
     .then(response => response.json())
     .then(data => {
       heroData = data.heroes;
