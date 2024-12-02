@@ -3,143 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hero Counter Pick Analyzer</title>
+  <title>Deadlock Counter Picks</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 py-8">
-<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-  <h1 class="text-2xl font-bold mb-4">Hero Counter Pick Analyzer</h1>
+<body class="bg-gray-100 flex justify-center p-4 overflow-y-scroll">
+<div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+    Deadlock Counter Picks
+  </h1>
 
-  <div class="mb-4 grid grid-cols-2 gap-4">
-    <p class="font-medium">Select Enemy Heroes:</p>
-    <p class="font-medium text-right">Maximum 6 heroes</p>
-    <div id="hero-checkboxes" class="col-span-2 grid grid-cols-2 gap-4"></div>
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">
+      Enemy Heroes
+    </h2>
+
+    <div id="hero-grid" class="grid grid-cols-3 gap-4"></div>
   </div>
 
-  <div id="results" class="mt-6"></div>
-  <div id="error-message" class="mt-4 text-red-500"></div>
+  <div id="top-counter-items" class="mb-6"></div>
+  <div id="selected-heroes" class="mb-6"></div>
+
+  <div id="error-message" class="text-red-500 text-center mt-4"></div>
 </div>
 
 <script>
-  const heroCheckboxesDiv = document.getElementById('hero-checkboxes');
-  const resultsDiv = document.getElementById('results');
-  const errorMessageDiv = document.getElementById('error-message');
+  document.addEventListener('DOMContentLoaded', () => {
+    const heroGrid = document.getElementById('hero-grid');
+    const selectedHeroesDiv = document.getElementById('selected-heroes');
+    const topCounterItemsDiv = document.getElementById('top-counter-items');
+    const errorMessageDiv = document.getElementById('error-message');
 
-  let heroData = [];
+    let heroData = [];
 
-  let heroesEndpoint = '/heroes.json';
-  if (location.protocol === 'https:') {
-    heroesEndpoint = '/deadlock-counterpicks/heroes.json';
-  }
+    const heroesEndpoint = location.protocol === 'https:' ? '/deadlock-counterpicks/heroes.json' : '/heroes.json';
 
-  fetch(heroesEndpoint)
-    .then(response => response.json())
-    .then(data => {
-      heroData = data.heroes;
-      console.log('Hero data loaded:', heroData);
-      renderHeroCheckboxes();
-      analyzeCounterItems();
-    })
-    .catch(error => {
-      console.error('Error loading hero data:', error);
-      errorMessageDiv.textContent = 'Error loading hero data. Please try again later.';
-    });
-
-  function renderHeroCheckboxes() {
-    heroCheckboxesDiv.innerHTML = '';
-
-    const checkboxes = heroData.map(hero => {
-      const checkbox = document.createElement('div');
-      checkbox.classList.add('flex', 'items-center');
-
-      const input = document.createElement('input');
-      input.type = 'checkbox';
-      input.id = `hero-${hero.name}`;
-      input.classList.add('mr-2');
-      input.addEventListener('change', () => {
-        const selectedHeroes = getSelectedHeroes();
-        if (selectedHeroes.length > 6) {
-          input.checked = false;
-        }
+    fetch(heroesEndpoint)
+      .then(response => response.json())
+      .then(data => {
+        heroData = data.heroes;
+        console.log('Hero data loaded:', heroData);
+        renderHeroCheckboxes();
         analyzeCounterItems();
+      })
+      .catch(error => {
+        console.error('Error loading hero data:', error);
+        errorMessageDiv.textContent = 'Error loading hero data. Please try again later.';
       });
 
-      const label = document.createElement('label');
-      label.htmlFor = `hero-${hero.name}`;
-      label.textContent = hero.name;
+    function renderHeroCheckboxes() {
+      heroGrid.innerHTML = '';
 
-      checkbox.appendChild(input);
-      checkbox.appendChild(label);
-      return checkbox;
-    });
+      heroData.forEach(hero => {
+        const checkbox = document.createElement('div');
+        checkbox.classList.add('flex', 'items-center');
 
-    for (let i = 0; i < checkboxes.length; i++) {
-      heroCheckboxesDiv.appendChild(checkboxes[i]);
-    }
-  }
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = `hero-${hero.name}`;
+        input.classList.add('mr-2');
+        input.addEventListener('change', () => {
+          if (getSelectedHeroes().length > 6) {
+            input.checked = false;
+          }
+          analyzeCounterItems();
+        });
 
-  function getSelectedHeroes() {
-    const selectedHeroes = [];
-    const checkboxes = document.querySelectorAll('#hero-checkboxes input[type="checkbox"]');
+        const label = document.createElement('label');
+        label.htmlFor = `hero-${hero.name}`;
+        label.textContent = hero.name;
 
-    for (const checkbox of checkboxes) {
-      if (checkbox.checked) {
-        selectedHeroes.push(checkbox.id.split('-')[1]);
-      }
-    }
-
-    return selectedHeroes;
-  }
-
-  function getCounterItems(selectedHeroes) {
-    const counterItems = {};
-
-    for (const hero of heroData) {
-      if (selectedHeroes.includes(hero.name)) {
-        counterItems[hero.name] = hero.counter_items;
-      }
+        checkbox.appendChild(input);
+        checkbox.appendChild(label);
+        heroGrid.appendChild(checkbox);
+      });
     }
 
-    return counterItems;
-  }
-
-  function getBestCounterItems(selectedHeroes) {
-    const allCounterItems = [];
-
-    for (const hero of heroData) {
-      if (selectedHeroes.includes(hero.name)) {
-        allCounterItems.push(...hero.counter_items);
-      }
+    function getSelectedHeroes() {
+      return Array.from(document.querySelectorAll('#hero-grid input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.id.split('-')[1]);
     }
 
-    const itemCounts = allCounterItems.reduce((counts, item) => {
-      counts[item] = (counts[item] || 0) + 1;
-      return counts;
-    }, {});
-
-    const bestItems = Object.entries(itemCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([item]) => item);
-
-    return bestItems;
-  }
-
-  function analyzeCounterItems() {
-    const selectedHeroes = getSelectedHeroes();
-    const counterItemsPerHero = getCounterItems(selectedHeroes);
-    const bestCounterItems = getBestCounterItems(selectedHeroes);
-
-    let html = '<h2 class="text-xl font-bold mb-2">Counter items per hero:</h2>';
-
-    for (const [hero, items] of Object.entries(counterItemsPerHero)) {
-      html += `<p><strong>${hero}:</strong> ${items.join(', ')}</p>`;
+    function getCounterItems(selectedHeroes) {
+      return selectedHeroes.reduce((acc, heroName) => {
+        const hero = heroData.find(h => h.name === heroName);
+        if (hero) {
+          acc[hero.name] = hero.counter_items;
+        }
+        return acc;
+      }, {});
     }
 
-    html += `<h2 class="text-xl font-bold mt-6 mb-2">Best 5 overall counter items:</h2>`;
-    html += `<p>${bestCounterItems.join(', ')}</p>`;
+    function getBestCounterItems(selectedHeroes) {
+      const itemCounts = selectedHeroes.flatMap(heroName => {
+        const hero = heroData.find(h => h.name === heroName);
+        return hero ? hero.counter_items : [];
+      }).reduce((counts, item) => {
+        counts[item] = (counts[item] || 0) + 1;
+        return counts;
+      }, {});
 
-    resultsDiv.innerHTML = html;
-    errorMessageDiv.textContent = '';
-  }
+      return Object.entries(itemCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([item]) => item);
+    }
+
+    function analyzeCounterItems() {
+      const selectedHeroes = getSelectedHeroes();
+      const counterItemsPerHero = getCounterItems(selectedHeroes);
+      const bestCounterItems = getBestCounterItems(selectedHeroes);
+
+      topCounterItemsDiv.innerHTML = `
+      <h2 class="text-xl font-bold mt-6 mb-2">Best 5 overall counter items</h2>
+      <div class="flex flex-wrap gap-2">
+        ${bestCounterItems.map(item => `<span class="bg-gray-200 px-2 py-1 rounded-full whitespace-nowrap">${item}</span>`).join('')}
+      </div>
+    `;
+
+      selectedHeroesDiv.innerHTML = `
+      <h2 class="text-xl font-bold mt-6 mb-2">Counter items per hero</h2>
+      ${Object.entries(counterItemsPerHero).map(([hero, items]) => `
+        <h3 class="font-semibold text-gray-700 mb-4">${hero}</h3>
+        <div class="flex flex-wrap gap-2 mb-2">
+          ${items.length ? items.map(item => `<span class="bg-gray-200 px-2 py-1 rounded-full whitespace-nowrap">${item}</span>`).join('') : '-'}
+        </div>
+      `).join('')}
+    `;
+
+      errorMessageDiv.textContent = '';
+    }
+  });
 </script>
