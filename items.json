@@ -235,6 +235,13 @@
       "components": []
     },
     {
+      "name": "Spellslinger Headshots",
+      "type": "Weapon",
+      "tier": 3,
+      "cost": 3000,
+      "components": ["Souls Shredder Bullets"]
+    },
+    {
       "name": "Crippling Headshot",
       "type": "Weapon",
       "tier": 4,
@@ -799,6 +806,20 @@
       "tier": 3,
       "cost": 3000,
       "components": []
+    },
+    {
+      "name": "Spirit Snatch",
+      "type": "Spirit",
+      "tier": 3,
+      "cost": 3000,
+      "components": ["Spirit Strike"]
+    },
+    {
+      "name": "Arcane Surge",
+      "type": "Spirit",
+      "tier": 3,
+      "cost": 3000,
+      "components": ["Kinetic Dash"]
     },
     {
       "name": "Boundless Spirit",
