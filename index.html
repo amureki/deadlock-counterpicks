@@ -51,36 +51,30 @@
       });
 
     function renderHeroCheckboxes() {
-      heroGrid.innerHTML = '';
+  heroGrid.innerHTML = '';
 
-      heroData.forEach(hero => {
-        const checkbox = document.createElement('div');
-        checkbox.classList.add('flex', 'items-center');
+  heroData.forEach(hero => {
+    const heroBox = document.createElement('div');
+    heroBox.classList.add('flex', 'items-center', 'justify-center', 'py-1', 'border', 'border-gray-300', 'rounded-lg', 'cursor-pointer', 'text-sm');
+    heroBox.textContent = hero.name;
 
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.id = `hero-${hero.name}`;
-        input.classList.add('mr-2');
-        input.addEventListener('change', () => {
-          if (getSelectedHeroes().length > 6) {
-            input.checked = false;
-          }
-          analyzeCounterItems();
-        });
+    heroBox.addEventListener('click', () => {
+      heroBox.classList.toggle('bg-blue-500');
+      heroBox.classList.toggle('text-white');
+      if (getSelectedHeroes().length > 6) {
+        heroBox.classList.toggle('bg-blue-500');
+        heroBox.classList.toggle('text-white');
+      }
+      analyzeCounterItems();
+    });
 
-        const label = document.createElement('label');
-        label.htmlFor = `hero-${hero.name}`;
-        label.textContent = hero.name;
-
-        checkbox.appendChild(input);
-        checkbox.appendChild(label);
-        heroGrid.appendChild(checkbox);
-      });
-    }
+    heroGrid.appendChild(heroBox);
+  });
+}
 
     function getSelectedHeroes() {
-      return Array.from(document.querySelectorAll('#hero-grid input[type="checkbox"]:checked'))
-        .map(checkbox => checkbox.id.split('-')[1]);
+      return Array.from(document.querySelectorAll('#hero-grid .bg-blue-500'))
+        .map(heroBox => heroBox.textContent);
     }
 
     function getCounterItems(selectedHeroes) {
