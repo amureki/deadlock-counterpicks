@@ -1,1 +1,1 @@
-# deadlock-counterpicks
+# Deadlock Counter Picks
