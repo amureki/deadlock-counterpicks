@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deadlock Counter Picks</title>
-  <link rel="canonical" href="https://deadlock69.com/counterpicks/" />
+  <link rel="canonical" href="https://deadlock69.com/counterpicks/"/>
   <link rel="manifest" href="/counterpicks/manifest.json">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
@@ -22,10 +22,16 @@
     <div id="hero-grid" class="grid grid-cols-3 gap-4"></div>
   </div>
 
+  <div id="message" class="text-red-500 text-center mt-4"></div>
+
   <div id="top-counter-items" class="mb-6"></div>
+  <button class="bg-blue-500 text-white px-4 py-2 rounded-lg mb-6" onclick="copyCounterItems()">Copy to clipboard
+  </button>
   <div id="selected-heroes" class="mb-6"></div>
 
-  <div id="error-message" class="text-red-500 text-center mt-4"></div>
+  <footer class="text-center text-gray-500 text-sm mt-4">
+    <p>© 2024 <a href="https://deadlock69.com" class="underline">deadlock69.com</a></p>
+  </footer>
 </div>
 
 <script type="text/javascript" src="/counterpicks/sw.js"></script>
@@ -36,7 +42,7 @@
     const heroGrid = document.getElementById('hero-grid');
     const selectedHeroesDiv = document.getElementById('selected-heroes');
     const topCounterItemsDiv = document.getElementById('top-counter-items');
-    const errorMessageDiv = document.getElementById('error-message');
+    const messageDiv = document.getElementById('message');
 
     let heroData = [];
 
@@ -50,7 +56,7 @@
       })
       .catch(error => {
         console.error('Error loading hero data:', error);
-        errorMessageDiv.textContent = 'Error loading hero data. Please try again later.';
+        messageDiv.textContent = 'Error loading hero data. Please try again later.';
       });
 
     function renderHeroCheckboxes() {
@@ -127,7 +133,27 @@
       `).join('')}
     `;
 
-      errorMessageDiv.textContent = '';
+      messageDiv.textContent = '';
+    }
+
+    copyCounterItems = () => {
+      const bestCounterItems = getBestCounterItems(getSelectedHeroes());
+      const itemsText = "deadlock69.com suggests items against the enemy team: " + bestCounterItems.join(', ');
+      navigator.clipboard.writeText(itemsText)
+        .then(() => {
+          const message = document.createElement('div');
+          message.textContent = 'Copied to clipboard!';
+          message.classList.add('text-green-500', 'text-center', 'mt-4');
+          messageDiv.appendChild(message);
+          setTimeout(() => {
+            messageDiv.removeChild(message);
+          }, 3000);
+        })
+        .catch(err => {
+          console.error('Failed to copy text: ', err);
+        });
     }
   });
 </script>
+</body>
+</html>
