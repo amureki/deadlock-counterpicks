@@ -139,7 +139,7 @@
 
     copyCounterItems = () => {
       const bestCounterItems = getBestCounterItems(getSelectedHeroes());
-      const itemsText = "deadlock69.com suggests items against the enemy team: " + bestCounterItems.join(', ');
+      const itemsText = "deadlock69.com|against enemy:" + bestCounterItems.join(',');
       navigator.clipboard.writeText(itemsText)
         .then(() => {
           const message = document.createElement('div');
